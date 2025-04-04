@@ -1,3 +1,4 @@
+
 import axiosInstance from '../utils/axiosInterceptor';
 
 export const taskService = {
@@ -44,7 +45,17 @@ export const taskService = {
       throw new Error(`Failed to update task status: ${error.response?.data?.message || error.message}`);
     }
   },
-
+  // ✅ Update an existing task (Admin Only)
+  updateTask: async (taskId, updatedTask) => {
+    try {
+      const response = await axiosInstance.put(`/admin/tasks/${taskId}`, updatedTask);
+      return response.data;
+    } catch (error) {
+      console.error("Error updating task:", error);
+      throw new Error(`Failed to update task: ${error.response?.data?.message || error.message}`);
+    }
+  },
+  
   // ✅ Delete a task (Admin Only)
   deleteTask: async (taskId) => {
     try {

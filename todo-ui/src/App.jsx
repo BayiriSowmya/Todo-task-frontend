@@ -46,23 +46,25 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
-          {/* User Routes */}
+          {/* User & Admin Profile (No Forbidden Page) */}
           <Route
-            path="/user/dashboard"
+            path="/user/profile"
             element={
-              <PrivateRoute allowedRoles={["USER"]}>
+              <PrivateRoute>
                 <Layout>
-                  <UserDashboard />
+                  <ProfileSettings />
                 </Layout>
               </PrivateRoute>
             }
           />
+
+          {/* User Dashboard */}
           <Route
-            path="/user/profile"
+            path="/user/dashboard"
             element={
-              <PrivateRoute allowedRoles={["USER"]}>
+              <PrivateRoute>
                 <Layout>
-                  <ProfileSettings />
+                  <UserDashboard />
                 </Layout>
               </PrivateRoute>
             }
@@ -72,7 +74,7 @@ function App() {
           <Route
             path="/admin/dashboard"
             element={
-              <PrivateRoute allowedRoles={["ADMIN"]}>
+              <PrivateRoute>
                 <Layout>
                   <AdminDashboard />
                 </Layout>
@@ -82,7 +84,7 @@ function App() {
           <Route
             path="/admin/users"
             element={
-              <PrivateRoute allowedRoles={["ADMIN"]}>
+              <PrivateRoute>
                 <Layout>
                   <UserManagement />
                 </Layout>
@@ -92,7 +94,7 @@ function App() {
           <Route
             path="/admin/tasks"
             element={
-              <PrivateRoute allowedRoles={["ADMIN"]}>
+              <PrivateRoute>
                 <Layout>
                   <TaskManagement />
                 </Layout>

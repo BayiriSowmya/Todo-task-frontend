@@ -1,13 +1,14 @@
-// src/components/admin/UserManagement.jsx
-import React, { useState, useEffect } from 'react';
-import { Container, Table, Button, Modal, Form } from 'react-bootstrap';
-import { userService } from '../../services/userService';
-import { authService } from '../../services/authService';
+import React, { useState, useEffect } from "react";
+import { Container, Table, Button, Modal, Form, Card } from "react-bootstrap";
+import { FaUserPlus, FaTrash, FaUsers } from "react-icons/fa";
+import { userService } from "../../services/userService";
+import { authService } from "../../services/authService";
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [newAdmin, setNewAdmin] = useState({ username: '', email: '', fullname: '', password: '' });
+  const [newAdmin, setNewAdmin] = useState({ username: "", email: "", fullname: "", password: "" });
+  const [deletedUsers, setDeletedUsers] = useState(new Set()); // Track deleted users in state
 
   useEffect(() => {
     fetchUsers();
@@ -18,78 +19,96 @@ const UserManagement = () => {
       const userList = await userService.getAllUsers();
       setUsers(userList);
     } catch (error) {
-      console.error('Failed to fetch users', error);
+      console.error("❌ Failed to fetch users:", error);
     }
   };
 
   const handleDeleteUser = async (userId) => {
+    if (!window.confirm("⚠️ Are you sure you want to delete this user?")) return;
+
     try {
       await userService.deleteUser(userId);
-      fetchUsers();
+      alert("✅ User deleted successfully!");
+      setDeletedUsers((prev) => new Set([...prev, userId])); // Soft delete from UI
     } catch (error) {
-      console.error('Failed to delete user', error);
+      console.error("❌ Failed to delete user:", error);
+
+      if (error.message.includes("foreign key constraint fails")) {
+        alert("⚠️ Cannot delete user because they have assigned tasks. Hiding them instead.");
+        setDeletedUsers((prev) => new Set([...prev, userId])); // Hide user from UI
+      } else {
+        alert("❌ Unable to delete user. Please try again.");
+      }
     }
   };
 
-  // UserManagement.jsx
-const handleCreateAdmin = async (e) => {
-  e.preventDefault();
+  const handleCreateAdmin = async (e) => {
+    e.preventDefault();
+    if (!newAdmin.username || !newAdmin.email || !newAdmin.fullname || !newAdmin.password) {
+      alert("⚠️ Please fill in all fields.");
+      return;
+    }
 
-  if (!newAdmin.username || !newAdmin.email || !newAdmin.fullname || !newAdmin.password) {
-    alert("⚠️ Please fill in all fields.");
-    return;
-  }
-
-  // Get the logged-in user ID from localStorage
-  const loggedInUser = JSON.parse(localStorage.getItem('user'));
-
-  try {
-    await authService.registerAdmin(newAdmin, loggedInUser.userId); // Pass the adminId
-    alert("✅ Admin created successfully!");
-    setShowModal(false);
-    fetchUsers(); // Fetch the updated user list
-  } catch (error) {
-    console.error("❌ Failed to create admin:", error);
-  }
-};
-
-  
+    const loggedInUser = JSON.parse(localStorage.getItem("user"));
+    try {
+      await authService.registerAdmin(newAdmin, loggedInUser.userId);
+      alert("✅ Admin created successfully!");
+      setShowModal(false);
+      fetchUsers();
+    } catch (error) {
+      console.error("❌ Failed to create admin:", error);
+    }
+  };
 
   return (
     <Container className="mt-5">
-      <h2 className="mb-4">User Management</h2>
-      <Button variant="primary" className="mb-3" onClick={() => setShowModal(true)}>
-        Create Admin
+      <h2 className="mb-4 text-center text-primary fw-bold d-flex align-items-center justify-content-center">
+        <FaUsers className="me-2 text-danger" size={35} /> User Management
+      </h2>
+
+      <Button variant="primary" className="mb-3 rounded-pill px-4 py-2 d-flex align-items-center" onClick={() => setShowModal(true)}>
+        <FaUserPlus className="me-2" /> Create Admin
       </Button>
-      <Table striped bordered hover>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map(user => (
-            <tr key={user.id}>
-              <td>{user.id}</td>
-              <td>{user.username}</td>
-              <td>{user.email}</td>
-              <td>{user.roles[0]?.rolename || 'USER'}</td>
-              <td>
-                <Button variant="danger" size="sm" onClick={() => handleDeleteUser(user.id)}>
-                  Delete
-                </Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
+
+      <Card className="shadow-lg border-0">
+        <Card.Body>
+          <Table responsive striped bordered hover className="mb-0 text-center">
+            <thead className="bg-dark text-white">
+              <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users
+                .filter((user) => !deletedUsers.has(user.id)) // Hide deleted users
+                .map((user) => (
+                  <tr key={user.id}>
+                    <td>{user.id}</td>
+                    <td>{user.username}</td>
+                    <td>{user.email}</td>
+                    <td>
+                      <span className={`badge ${user.roles[0]?.rolename === "ADMIN" ? "bg-primary" : "bg-success"}`}>
+                        {user.roles[0]?.rolename || "USER"}
+                      </span>
+                    </td>
+                    <td>
+                      <Button variant="danger" size="sm" onClick={() => handleDeleteUser(user.id)}>
+                        <FaTrash className="me-1" /> Delete
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </Table>
+        </Card.Body>
+      </Card>
 
       <Modal show={showModal} onHide={() => setShowModal(false)}>
-        <Modal.Header closeButton>
+        <Modal.Header closeButton className="text-white" style={{ background: "linear-gradient(45deg, #007bff, #6610f2)" }}>
           <Modal.Title>Create Admin</Modal.Title>
         </Modal.Header>
         <Modal.Body>
@@ -110,7 +129,7 @@ const handleCreateAdmin = async (e) => {
               <Form.Label>Password</Form.Label>
               <Form.Control type="password" required value={newAdmin.password} onChange={(e) => setNewAdmin({ ...newAdmin, password: e.target.value })} />
             </Form.Group>
-            <Button variant="primary" type="submit">
+            <Button variant="primary" type="submit" className="w-100 fw-bold">
               Create Admin
             </Button>
           </Form>

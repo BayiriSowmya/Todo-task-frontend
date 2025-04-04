@@ -7,8 +7,8 @@ export const userService = {
       const response = await axiosInstance.get('/admin/users');
       return response.data;
     } catch (error) {
-      console.error("Error fetching users:", error);
-      throw error;
+      console.error("Error fetching users:", error.response?.data || error.message);
+      throw new Error(error.response?.data?.message || "Failed to fetch users.");
     }
   },
 
@@ -18,8 +18,8 @@ export const userService = {
       const response = await axiosInstance.get('/admin/tasks');
       return response.data;
     } catch (error) {
-      console.error("Error fetching tasks:", error);
-      throw error;
+      console.error("Error fetching tasks:", error.response?.data || error.message);
+      throw new Error(error.response?.data?.message || "Failed to fetch tasks.");
     }
   },
 
@@ -29,30 +29,30 @@ export const userService = {
       const response = await axiosInstance.delete(`/admin/users/${userId}`);
       return response.data;
     } catch (error) {
-      console.error("Error deleting user:", error);
-      throw error;
+      console.error("Error deleting user:", error.response?.data || error.message);
+      throw new Error(error.response?.data?.message || "Failed to delete user.");
     }
   },
 
-  // ✅ Fetch user profile data
-  getUserProfile: async (userId) => {
-    try {
-      const response = await axiosInstance.get(`/user/profile/${userId}`);
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching user profile:", error);
-      throw error;
+    // ✅ Fetch user profile (Updated URL structure)
+    getUserProfile: async (userId) => {
+      try {
+        const response = await axiosInstance.get(`/user/profile/${userId}`);
+        return response.data;
+      } catch (error) {
+        console.error("Error fetching user profile:", error.response?.data || error.message);
+        throw new Error(error.response?.data?.message || "Failed to fetch user profile.");
+      }
+    },
+  
+    // ✅ Update user profile (Fixed API request)
+    updateUserProfile: async (userId, userData) => {
+      try {
+        const response = await axiosInstance.put(`/user/profile/${userId}`, userData);
+        return response.data;
+      } catch (error) {
+        console.error("Error updating user profile:", error.response?.data || error.message);
+        throw new Error(error.response?.data?.message || "Failed to update profile.");
+      }
     }
-  },
-
-  // ✅ Update user profile
-  updateUserProfile: async (userId, userData) => {
-    try {
-      const response = await axiosInstance.put(`/user/profile/${userId}`, userData);
-      return response.data;
-    } catch (error) {
-      console.error("Error updating user profile:", error);
-      throw error;
-    }
-  }
-};
+  };

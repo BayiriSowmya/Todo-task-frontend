@@ -12,15 +12,14 @@ export const AuthProvider = ({ children }) => {
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
 
-      // Optionally, you can decode the token to verify it or extract more info if necessary
       try {
         const decoded = jwtDecode(parsedUser.accessToken);
         console.log("Decoded JWT:", decoded); // Debugging role extraction
-        
+
         setUser({
           id: parsedUser.userId,
           username: parsedUser.username,
-          role: parsedUser.role || 'USER', // Set 'USER' as a fallback role if it's missing
+          role: parsedUser.role || 'USER', // ✅ Default to USER
         });
 
         setIsAuthenticated(true);
