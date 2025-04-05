@@ -10,14 +10,37 @@ const Login = () => {
   const { setUser, setIsAuthenticated } = useAuth();
   const [formData, setFormData] = useState({ username: '', password: '' });
   const [error, setError] = useState(null);
+  const [validationErrors, setValidationErrors] = useState({});
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const validateForm = () => {
+    const errors = {};
+
+    if (!formData.username.trim()) {
+      errors.username = 'Username cannot be empty';
+    } else if (formData.username.length < 4 || formData.username.length > 20) {
+      errors.username = 'Username must be between 4 and 20 characters';
+    }
+
+    if (!formData.password.trim()) {
+      errors.password = 'Password cannot be empty';
+    } else if (formData.password.length < 8) {
+      errors.password = 'Password must be at least 8 characters long';
+    }
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+
+    if (!validateForm()) return; // Prevent API call if validation fails
+
     try {
       const response = await authService.login(formData.username, formData.password);
 
@@ -45,23 +68,18 @@ const Login = () => {
     }
   };
 
-  const handleRegisterClick = () => {
-    navigate('/register');
-  };
-
   return (
     <div 
       style={{
         height: '100vh',
         width: '100%',
-        background: 'linear-gradient(to right, #e3f2fd, #ffffff)', // ✅ Keeping your background
+        background: 'linear-gradient(to right, #e3f2fd, #ffffff)',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
         position: 'relative'
       }}
     >
-      {/* ✅ Background image for To-Do theme */}
       <div 
         style={{
           position: 'absolute',
@@ -83,7 +101,6 @@ const Login = () => {
                 Welcome Back!
               </Card.Header>
               <Card.Body className="p-4">
-                {/* ✅ Motivational Quote */}
                 <p className="text-center text-muted fw-bold" style={{ fontSize: '1.1rem', fontStyle: 'italic' }}>
                   "Stay organized, stay productive!" ✨
                 </p>
@@ -100,10 +117,13 @@ const Login = () => {
                         name="username"
                         value={formData.username}
                         onChange={handleChange}
-                        required
                         placeholder="Enter your username"
                         className="rounded-2"
+                        isInvalid={!!validationErrors.username}
                       />
+                      <Form.Control.Feedback type="invalid">
+                        {validationErrors.username}
+                      </Form.Control.Feedback>
                     </div>
                   </Form.Group>
 
@@ -116,10 +136,13 @@ const Login = () => {
                         name="password"
                         value={formData.password}
                         onChange={handleChange}
-                        required
                         placeholder="Enter your password"
                         className="rounded-2"
+                        isInvalid={!!validationErrors.password}
                       />
+                      <Form.Control.Feedback type="invalid">
+                        {validationErrors.password}
+                      </Form.Control.Feedback>
                     </div>
                   </Form.Group>
 
@@ -130,7 +153,7 @@ const Login = () => {
 
                 <div className="mt-3 text-center">
                   <p className="mb-1 text-muted">Don't have an account?</p>
-                  <Button variant="link" onClick={handleRegisterClick} className="fw-bold">
+                  <Button variant="link" onClick={() => navigate('/register')} className="fw-bold">
                     Register Here
                   </Button>
                 </div>
@@ -143,4 +166,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Login;
