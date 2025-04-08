@@ -22,23 +22,26 @@ const Register = () => {
 
     switch (name) {
       case 'fullname':
-        errorMsg = value.length < 3 ? 'Full Name must be at least 3 characters' : '';
+        errorMsg = /^[A-Za-z]+$/.test(value) && value.length >= 3
+          ? '' : 'Full Name must be at least 3 characters with letters only (no spaces or numbers)';
         break;
       case 'username':
         errorMsg = /^[a-zA-Z0-9]+$/.test(value) && value.length >= 4
           ? '' : 'Username must be at least 4 characters (letters/numbers only)';
         break;
       case 'email':
-        errorMsg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? '' : 'Enter a valid email address';
+        errorMsg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+          ? '' : 'Enter a valid email address';
         break;
-      case 'password':
-        errorMsg = value.length >= 6 && /\d/.test(value)
-          ? '' : 'Password must be at least 6 characters and contain a number';
-        break;
+        case 'password':
+          errorMsg = /^(?=.*[A-Z]).{6,}$/.test(value)
+            ? ''
+            : 'Password must be at least 6 characters and contain at least one uppercase letter';
+          break;
       default:
         break;
     }
-
+    
     setErrors(prev => ({ ...prev, [name]: errorMsg }));
   };
 

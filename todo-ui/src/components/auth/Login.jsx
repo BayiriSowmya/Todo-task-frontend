@@ -27,8 +27,8 @@ const Login = () => {
 
     if (!formData.password.trim()) {
       errors.password = 'Password cannot be empty';
-    } else if (formData.password.length < 8) {
-      errors.password = 'Password must be at least 8 characters long';
+    } else if (formData.password.length < 4) {
+      errors.password = 'Password must be at least 4 characters long';
     }
 
     setValidationErrors(errors);
